@@ -17,7 +17,7 @@ function getDevices(mediaDevices) {
     });
 }
 
-navigator.mediaDevices.enumerateDevices().then(gotDevices);
+navigator.mediaDevices.enumerateDevices().then(getDevices);
 
 async function start() {
     if (window.stream) {
