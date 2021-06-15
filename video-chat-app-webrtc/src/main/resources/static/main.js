@@ -3,21 +3,21 @@ const audioSelect = document.querySelector('select#audioSource');
 const videoSelect = document.querySelector('select#videoSource');
 
 
-function getDevices(mediaDevices) {
-    mediaDevices.forEach(device => {
-        const option = document.createElement('option');
-        option.value = device.deviceId;
-        option.text = device.label;
+async function getDevices() {
+     const mediaDevices = await navigator.mediaDevices.enumerateDevices();
 
-        if (device.kind === 'videoinput') {
-            videoSelect.appendChild(option);
-        } else if (device.kind === 'audioinput') {
-            audioSelect.appendChild(option);
-        }
-    });
+     mediaDevices.forEach(device => {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          option.text = device.label;
+
+          if (device.kind === 'videoinput') {
+              videoSelect.appendChild(option);
+          } else if (device.kind === 'audioinput') {
+              audioSelect.appendChild(option);
+          }
+     });
 }
-
-navigator.mediaDevices.enumerateDevices().then(getDevices);
 
 async function start() {
     if (window.stream) {
@@ -40,4 +40,5 @@ async function start() {
 audioSelect.onchange = start;
 videoSelect.onchange = start;
 
+getDevices();
 start();
