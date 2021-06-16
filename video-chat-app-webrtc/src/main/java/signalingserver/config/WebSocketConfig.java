@@ -13,6 +13,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Configuration
 @EnableWebSocket
@@ -31,24 +32,28 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
 class VideoChatHandler extends TextWebSocketHandler {
 
-    private List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
+    private final List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
+    private final AtomicBoolean isPolitePeer = new AtomicBoolean(true);
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        String jsonResponse = "{\"polite\": \"" + isPolitePeer.getAndSet(!isPolitePeer.get()) + "\"}";
+        session.sendMessage(new TextMessage(jsonResponse));
         sessions.add(session);
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-         for(WebSocketSession s : sessions) {
-             if(!s.getId().equals(session.getId())) {
-                 s.sendMessage(message);
-             }
-         }
+        for (WebSocketSession s : sessions) {
+            if (!s.getId().equals(session.getId())) {
+                s.sendMessage(message);
+            }
+        }
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        System.out.println("INSIDE CLOSING STATE");
         sessions.removeIf(s -> s.getId().equals(session.getId()));
     }
 }
